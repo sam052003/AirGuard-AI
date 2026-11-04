@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AirGuard 查詢請求資料格式（設計規格）",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query_text": {
+      "type": "string",
+      "minLength": 1
+    },
+    "station_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "city": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "activity_type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "population_group": {
+      "enum": [
+        "general",
+        "sensitive",
+        "unspecified"
+      ]
+    },
+    "start_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "end_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "timezone": {
+      "const": "Asia/Taipei"
+    },
+    "as_of": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "query_text",
+    "population_group",
+    "timezone"
+  ]
+}

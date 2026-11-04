@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AirGuard 回覆資料格式（設計規格）",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "status": {
+      "enum": [
+        "ok",
+        "partial",
+        "needs_input",
+        "unavailable",
+        "out_of_horizon"
+      ]
+    },
+    "interpreted_request": {
+      "type": "object"
+    },
+    "official_aqi": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "forecasts": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "considered_windows": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "recommendation": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "status",
+    "interpreted_request",
+    "official_aqi",
+    "forecasts",
+    "considered_windows",
+    "recommendation",
+    "sources",
+    "limitations",
+    "generated_at"
+  ]
+}

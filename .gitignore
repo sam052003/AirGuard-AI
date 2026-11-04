@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+
+# Frontend
+node_modules/
+.next/
+.turbo/
+dist/
+build/
+coverage/
+
+# Local data and model artifacts
+/data/raw/
+/data/interim/
+/data/processed/
+/data/cache/
+/models/
+/artifacts/
+/runs/
+/experiments/outputs/
+*.joblib
+*.pkl
+*.parquet
+*.sqlite
+*.db
+
+# Secrets / local environments
+*.key
+*.pem
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
