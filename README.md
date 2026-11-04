@@ -12,12 +12,12 @@
 
 ## 團體專題與 Proposal 交付項目
 
-本專題由 **3 位組員共同完成**。目前以課程 Proposal 階段的**四項交付物**為主，不預先列出個別成員分工；組別、姓名與學號依正式分組資料填入。
+本專題由 **3 位組員共同完成**。目前以課程 Proposal 階段的**四項交付物**為主。
 
 | 課程要求 | 本倉庫對應內容 | 目前狀態 |
 | --- | --- | --- |
-| ① Proposal Document（提案報告書） | [`docs/proposal/AirGuard_AI_Final_Proposal.docx`](docs/proposal/AirGuard_AI_Final_Proposal.docx) | 文件已備妥；組員資訊待填 |
-| ② Proposal Presentation（提案簡報） | [`docs/proposal/AirGuard_AI_Final_Proposal_Presentation.pptx`](docs/proposal/AirGuard_AI_Final_Proposal_Presentation.pptx) | 文件已備妥；組員資訊待填 |
+| ① Proposal Document（提案報告書） | [`docs/proposal/AirGuard_AI_Final_Proposal.docx`](docs/proposal/AirGuard_AI_Final_Proposal.docx) | 文件已備妥 |
+| ② Proposal Presentation（提案簡報） | [`docs/proposal/AirGuard_AI_Final_Proposal_Presentation.pptx`](docs/proposal/AirGuard_AI_Final_Proposal_Presentation.pptx) | 文件已備妥 |
 | ③ GitHub Repository | 本儲存庫及 `README.md`、提案附件 | **檔案已備妥；建立並 Push 遠端倉庫後完成** |
 | ④ `DESIGN.md` | [`DESIGN.md`](DESIGN.md) | 系統提案設計已備妥 |
 
