@@ -1,32 +1,138 @@
-"""CLI：離線資料核對或使用環境部 API Key 取得官方資料。"""
+"""CLI：離線資料核對或使用環境部 API Key 取得官方資料與品質報告。"""
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
-from .moenv import MOENVClient, DataError, FetchError, parse_aqi, parse_hourly_pm25, quality_summary
+from typing import Any
+
+from .moenv import (
+    ALLOWED_DATASETS,
+    ALLOWED_DUPLICATE_POLICIES,
+    DATASET_DETAIL_URL,
+    LICENSE_NOTES,
+    SCHEMA_VERSION,
+    DataError,
+    FetchError,
+    MOENVClient,
+    parse_aqi,
+    parse_historical_aqi,
+    parse_hourly_pm25,
+    parse_stations,
+    quality_summary,
+    station_month_quality_report,
+)
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(description="AirGuard W1 官方資料驗證工具")
-    parser.add_argument("--dataset", choices=["AQX_P_432", "AQX_P_13"], required=True)
+def _time_bounds(rows: list[dict[str, Any]]) -> tuple[str | None, str | None]:
+    timestamps: list[str] = []
+    for row in rows:
+        ts = row.get("observed_at_utc") or row.get("published_at_utc")
+        if isinstance(ts, str) and ts:
+            timestamps.append(ts)
+    if not timestamps:
+        return None, None
+    return min(timestamps), max(timestamps)
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="AirGuard W1 官方資料驗證與品質報告工具")
+    parser.add_argument("--dataset", choices=sorted(ALLOWED_DATASETS), required=True)
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument("--input", type=Path, help="讀取 JSON 檔；可以離線測試")
-    source.add_argument("--live", action="store_true", help="使用環境部官方 API（需 MOENV_API_KEY）")
+    source.add_argument("--live", action="store_true", help="使用環境部官方 API（需 MOENV_API_KEY 或 .env）")
     parser.add_argument("--output", type=Path, help="輸出整理後的 JSONL（需審閱來源與授權）")
-    parser.add_argument("--limit", type=int, default=1000)
-    args = parser.parse_args()
+    parser.add_argument("--report-output", type=Path, help="輸出完整資料品質與來源追蹤 JSON 報告")
+    parser.add_argument("--limit", type=int, default=1000, help="單頁筆數上限（1..1000）")
+    parser.add_argument("--offset", type=int, default=0, help="起始分頁 offset")
+    parser.add_argument("--max-pages", type=int, default=1, help="分頁擷取頁數（預設 1）")
+    parser.add_argument("--station-id", type=str, help="篩選特定官方測站代碼（如臺中西屯 32）")
+    parser.add_argument("--county", type=str, help="篩選縣市名稱（如 臺中市）")
+    parser.add_argument(
+        "--on-duplicate",
+        choices=sorted(ALLOWED_DUPLICATE_POLICIES),
+        default="error",
+        help="AQX_P_13 同站同時刻重複紀錄處理策略（預設 error）",
+    )
+    parser.add_argument("--env-file", type=Path, help="指定 .env 檔案路徑（預設為專案根目錄 .env）")
+    args = parser.parse_args(argv)
+
     try:
-        payload = json.loads(args.input.read_text(encoding="utf-8-sig")) if args.input else MOENVClient().fetch(args.dataset, limit=args.limit)
-        rows = parse_hourly_pm25(payload) if args.dataset == "AQX_P_13" else parse_aqi(payload)
-        report = {"dataset": args.dataset, "records": len(rows), "mode": "live" if args.live else "offline"}
+        if args.input:
+            raw_bytes = args.input.read_bytes()
+            payload = json.loads(raw_bytes.decode("utf-8-sig"))
+            provenance = {
+                "source_id": args.dataset,
+                "source_url": f"{DATASET_DETAIL_URL}/{args.dataset}",
+                "query_params_without_api_key": {"input": str(args.input)},
+                "retrieved_at_utc": datetime.now(timezone.utc).isoformat(),
+                "sha256": hashlib.sha256(raw_bytes).hexdigest(),
+                "station_id": args.station_id,
+                "license_notes": LICENSE_NOTES,
+                "schema_version": SCHEMA_VERSION,
+            }
+        else:
+            client = MOENVClient(env_file=args.env_file)
+            item_filter = "PM2.5" if args.dataset == "AQX_P_13" and args.station_id else None
+            fetched = client.fetch_pages(
+                args.dataset,
+                limit=args.limit,
+                start_offset=args.offset,
+                max_pages=args.max_pages,
+                station_id=args.station_id if args.dataset in {"AQX_P_13", "AQX_P_488"} else None,
+                item_eng_name=item_filter,
+            )
+            payload = fetched["records"]
+            provenance = fetched["provenance"]
+
+        duplicate_log: list[dict[str, Any]] = []
+        if args.dataset == "AQX_P_13":
+            rows = parse_hourly_pm25(
+                payload,
+                on_duplicate=args.on_duplicate,
+                duplicate_log=duplicate_log,
+                station_id=args.station_id,
+            )
+        elif args.dataset == "AQX_P_432":
+            rows = parse_aqi(payload, county=args.county, station_id=args.station_id)
+        elif args.dataset == "AQX_P_488":
+            rows = parse_historical_aqi(payload, county=args.county, station_id=args.station_id)
+        else:
+            rows = parse_stations(payload, county=args.county)
+
+        min_time, max_time = _time_bounds(rows)
+        provenance["record_count"] = len(rows)
+        provenance["min_time"] = min_time
+        provenance["max_time"] = max_time
+
+        report: dict[str, Any] = {
+            "dataset": args.dataset,
+            "records": len(rows),
+            "mode": "live" if args.live else "offline",
+            "provenance": provenance,
+        }
         if args.dataset == "AQX_P_13":
             report["quality"] = quality_summary(rows)
+            report["station_month_quality"] = station_month_quality_report(
+                rows, duplicate_log=duplicate_log
+            )
         if args.output:
             args.output.parent.mkdir(parents=True, exist_ok=True)
-            args.output.write_text("".join(json.dumps(x, ensure_ascii=False) + "\n" for x in rows), encoding="utf-8")
+            args.output.write_text(
+                "".join(json.dumps(x, ensure_ascii=False) + "\n" for x in rows),
+                encoding="utf-8",
+            )
             report["output"] = str(args.output)
+        if args.report_output:
+            args.report_output.parent.mkdir(parents=True, exist_ok=True)
+            args.report_output.write_text(
+                json.dumps(report, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+            )
+            report["report_output"] = str(args.report_output)
         print(json.dumps(report, ensure_ascii=False, indent=2))
         return 0
     except (OSError, ValueError, DataError, FetchError, json.JSONDecodeError) as exc:

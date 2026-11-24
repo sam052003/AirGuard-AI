@@ -1,0 +1,20 @@
+{
+  "records": [
+    {
+      "sitename": "示例測站（合成資料）",
+      "county": "臺中市",
+      "aqi": "55",
+      "pollutant": "細懸浮微粒",
+      "status": "普通",
+      "pm2.5": "14",
+      "pm2.5_avg": "16.5",
+      "windspeed": "2.1",
+      "winddirec": "88.0",
+      "datacreationdate": "2026-11-23 14:00",
+      "longitude": "120.616917",
+      "latitude": "24.162197",
+      "siteid": "999"
+    }
+  ],
+  "metadata": "合成資料，僅供測試，不是真實環境部觀測"
+}

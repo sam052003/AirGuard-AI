@@ -42,10 +42,10 @@ flowchart TD
 
 | 來源 | 核心欄位 | 用途與限制 |
 |---|---|---|
-| [AQX_P_432](https://data.moenv.gov.tw/dataset/detail/AQX_P_432) | `SiteId, AQI, PM2.5, publishtime` 等 | 即時官方發布值；每小時，可能有延遲／缺漏 |
-| [AQX_P_488](https://data.moenv.gov.tw/dataset/detail/AQX_P_488) | `SiteId, DataCreationDate, PM2.5, WindSpeed` 等 | 歷史對照；官方有月份檔，實際可得期間需下載確認 |
-| [AQX_P_13](https://data.moenv.gov.tw/dataset/detail/AQX_P_13) | `SiteId, ItemName, ItemUnit, MonitorDate, MonitorValue00…23` | 逐時建模資料；必須將寬表轉長表 |
-| [AQX_P_07](https://data.moenv.gov.tw/dataset/detail/AQX_P_07) | 站名、城市、站點 ID、TWD97Lon／Lat | 站點座標及地圖，**不代表路段污染值** |
+| [AQX_P_432](https://data.moenv.gov.tw/dataset/detail/AQX_P_432) | `siteid, sitename, county, aqi, pm2.5, pm2.5_avg, publishtime` | 即時官方發布值；每小時更新，嚴格區分 `aqi`、當小時 `pm2.5` 與移動平均 `pm2.5_avg` |
+| [AQX_P_488](https://data.moenv.gov.tw/dataset/detail/AQX_P_488) | `siteid, datacreationdate, aqi, pm2.5, pm2.5_avg, windspeed, winddirec` | 歷史對照；支援 `filters=siteid,EQ,<id>` 分頁查詢，`published_at_utc` 為 `null` |
+| [AQX_P_13](https://data.moenv.gov.tw/dataset/detail/AQX_P_13) | `siteid, itemengname, itemname, itemunit, monitordate, monitorvalue00…23` | 逐時建模主資料；寬表轉長表，已實測驗證臺中市一般站 `28..32`（2024-03-11～2026-11-23）與交通站 `88`（2026-01-02～2026-11-23） |
+| [AQX_P_07](https://data.moenv.gov.tw/dataset/detail/AQX_P_07) | `siteid, sitename, county, township, twd97lon, twd97lat, sitetype` | 官方站點 TWD97 座標及地圖（已確認臺中市 6 站），**不代表路段污染值** |
 | [AQI 指引](https://airtw.moenv.gov.tw/cht/Information/Standard/AirQualityIndicatorNew.aspx) | 官方 AQI 分級與活動建議 | 規則需記錄生效版次、不可從 PM2.5 濃度自行宣稱官方 AQI |
 
 **API 會員金鑰**：環境部 API 需會員 Key，[官方文件](https://data.moenv.gov.tw/paradigm) 已確認。`MOENV_API_KEY` 僅存入本機 `.env` 或部署 Secrets；歷史原始檔按官方下載方案取用。若 API 不可用，用已核對日期的靜態快照做離線重播，**不得宣稱為現在值**。

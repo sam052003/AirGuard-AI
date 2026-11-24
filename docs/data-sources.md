@@ -2,10 +2,10 @@
 
 | 代碼 | 來源 | 重要欄位 | 使用方式 |
 |---|---|---|---|
-| AQX_P_432 | [官方每小時 AQI](https://data.moenv.gov.tw/dataset/detail/AQX_P_432) | SiteId、SiteName、AQI、PM2.5、publishtime、Longitude／Latitude | 取得目前正式發布的 AQI 與測站濃度 |
-| AQX_P_488 | [歷史 AQI](https://data.moenv.gov.tw/dataset/detail/AQX_P_488) | SiteId、DataCreationDate、PM2.5、WindSpeed 等 | 按月官方歷史下載，檢查可用年份 |
-| AQX_P_13 | [逐時污染物](https://data.moenv.gov.tw/dataset/detail/AQX_P_13) | SiteId、ItemName、ItemUnit、MonitorDate、MonitorValue00…23 | 逐時 PM2.5 模型候選主資料 |
-| AQX_P_07 | [測站基本資料](https://data.moenv.gov.tw/dataset/detail/AQX_P_07) | SiteId、SiteName、County、TWD97Lon／Lat | 地圖座標與標準測站識別 |
+| AQX_P_432 | [官方每小時 AQI](https://data.moenv.gov.tw/dataset/detail/AQX_P_432) | `siteid, sitename, county, aqi, status, pollutant, pm2.5, pm2.5_avg, publishtime, longitude, latitude` | 取得目前正式發布的 AQI 與當小時測站濃度（嚴格區分 `aqi`、`pm2.5` 與 `pm2.5_avg`） |
+| AQX_P_488 | [歷史 AQI](https://data.moenv.gov.tw/dataset/detail/AQX_P_488) | `siteid, sitename, county, aqi, status, pollutant, pm2.5, pm2.5_avg, windspeed, winddirec, datacreationdate` | 歷史 AQI 與氣象風場對照；支援 `filters=siteid,EQ,<id>` 分頁查詢 |
+| AQX_P_13 | [逐時污染物](https://data.moenv.gov.tw/dataset/detail/AQX_P_13) | `siteid, sitename, itemid, itemname, itemengname, itemunit, monitordate, monitorvalue00…23` | 逐時 PM2.5 模型主資料；支援 `filters=siteid,EQ,<id>\|itemengname,EQ,PM2.5` 分頁擷取（實測可取回 2024-03-11 起約 33 個月逐時資料） |
+| AQX_P_07 | [測站基本資料](https://data.moenv.gov.tw/dataset/detail/AQX_P_07) | `siteid, sitename, siteengname, areaname, county, township, siteaddress, twd97lon, twd97lat, sitetype` | 地圖 TWD97 座標與標準測站識別（實測臺中市共 6 站：`28, 29, 30, 31, 32, 88`） |
 | MOENV AQI RULE | [AQI 健康影響](https://airtw.moenv.gov.tw/cht/Information/Standard/AirQualityIndicatorNew.aspx) | AQI 各級、族群活動建議 | 版本化決策規則 |
 
 ## 存取與工程限制

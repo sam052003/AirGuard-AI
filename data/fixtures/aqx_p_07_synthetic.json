@@ -1,0 +1,41 @@
+{
+  "records": [
+    {
+      "sitename": "示例西屯（合成資料）",
+      "siteengname": "Synthetic Xitun",
+      "areaname": "中部空品區",
+      "county": "臺中市",
+      "township": "西屯區",
+      "siteaddress": "臺中市西屯區示例路1號",
+      "twd97lon": "120.616917",
+      "twd97lat": "24.162197",
+      "sitetype": "一般站",
+      "siteid": "991"
+    },
+    {
+      "sitename": "示例大道（合成資料）",
+      "siteengname": "Synthetic Avenue",
+      "areaname": "中部空品區",
+      "county": "台中市",
+      "township": "西屯區",
+      "siteaddress": "台中市西屯區示例大道666號",
+      "twd97lon": "--",
+      "twd97lat": "",
+      "sitetype": "交通站",
+      "siteid": "992"
+    },
+    {
+      "sitename": "示例北站（合成資料）",
+      "siteengname": "Synthetic North",
+      "areaname": "北部空品區",
+      "county": "臺北市",
+      "township": "中正區",
+      "siteaddress": "臺北市中正區示例路2號",
+      "twd97lon": "121.516667",
+      "twd97lat": "25.046389",
+      "sitetype": "一般站",
+      "siteid": "993"
+    }
+  ],
+  "metadata": "合成資料，僅供測試，不是真實環境部觀測"
+}

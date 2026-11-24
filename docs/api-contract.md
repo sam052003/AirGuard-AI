@@ -7,7 +7,8 @@
 - `source_id`、`station_id`、`observed_at`／`published_at`／`retrieved_at`、`unit`、`averaging_window`、`quality_flag` 必須有明確語意；未知的發佈時間是 `null`，不能以擷取時間偽裝。
 - 官方 `aqi` 數值與模型 `pm25_ug_m3` 分開；預測距離僅 `[1,3,6]` 小時（並不代表其他時距允許模型外插）。
 - 無資料回 `null` 加上明確狀態；不得以 0、空來源、無版本資訊假裝可靠觀測。
-- API Key 僅在後端讀取 `MOENV_API_KEY`；不放 query logs、response、前端或 GitHub。
+- API Key 僅在後端讀取系統環境變數 `MOENV_API_KEY` 或本機 `.env`（系統環境變數優先）；不放 query logs、response、前端或 GitHub。
+- W1 CLI 與資料層已實作 `AQX_P_07`（含 `longitude_twd97`、`latitude_twd97`、`coordinate_system="TWD97"`、`coordinate_status`）、`AQX_P_432`、`AQX_P_488`（區分 `official_aqi`、`observed_pm25_ug_m3` 與 `pm25_moving_avg_ug_m3`）及 `AQX_P_13`（含 `station_month_quality_report`、`horizon_valid_pairs` 與 `provenance.sha256`）。
 - 預估暴露 `exposure_index_ug_h_m3 = Σ(C_ug_m3 × duration_h)` 為**測站尺度濃度–時間估算**，不等於個人吸入劑量或健康安全閾值。
 
 ## 規劃的端點
