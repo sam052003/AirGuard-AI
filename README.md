@@ -5,7 +5,7 @@
 **第二組｜組長：林宏陽（7115056179）｜組員：蔡明憲（7115056013）、許鈵昆（8114056002）**  
 **研究與設計修訂：2026-11-24｜版本：v3（依公開資料重新收斂可實作範圍）**
 
-> **目前為 W1 資料工程初期**：已建立環境部資料解析、離線樣本與單元測試；真實 API Key、歷史資料盤點、ML、Agent、Web 與正式實驗尚未驗證。原始與 v3 提案文件均保留於 `docs/proposal/`。
+> **目前為 W1 資料工程完成、待進入 W2 Baseline 階段**：已完成環境部 `AQX_P_07`、`AQX_P_432`、`AQX_P_488`、`AQX_P_13` 真實 API 欄位核實、臺中市 6 座官方測站盤點、分頁原始快照保存（`--raw-dir`）與離線重算驗證、33 個月份逐時 PM2.5 品質報告，以及 19 項離線單元測試；ML 模型訓練、Agent、Web 與正式回測實驗尚未執行。原始與 v3 提案文件均保留於 `docs/proposal/`。
 
 ## 1. 專題定位
 
@@ -84,20 +84,44 @@ LLM 解析情境與呼叫白名單工具，**數值運算、模型推論、官�
 - [版本變更記錄](docs/decisions/2026-11-24-scope-decision.md) — 說明為何取消路線導航必做承諾。
 - [myplan 文件索引](myplan/README.md) — 後續原始摘要與研究需求的重新整合。
 
-**目前狀態**：W1 離線資料處理已有 Python 程式及 8 項單元測試；真實環境部資料連接、ML 模型、Agent、Web Demo 尚未完成。資料可用期間、實際缺值與 API 限額需取得金鑰並盤點。
+**目前狀態**：W1 資料處理已完成 19 項離線單元測試，並於本機透過 `MOENV_API_KEY` 完成環境部 `AQX_P_07`（臺中 6 站座標）、`AQX_P_432`（即時 AQI）、`AQX_P_488`（歷史 AQI）與 `AQX_P_13`（2024-03-11～2026-11-23 逐時 PM2.5 原始分頁快照、SHA256 驗證與品質報告）本機實測；GitHub Actions CI 僅執行離線合成 fixture 測試；ML 模型、Agent 與 Web Demo 尚未開發。
 
 
-## 8. W1 已開始實作：官方資料接入與品質檢查（2026-11-24）
+## 8. W1 官方資料接入、環境變數設定與品質檢查（2026-11-24）
 
-- **已寫程式與測試**：環境部 `AQX_P_432` 的 AQI／PM2.5 區分、`AQX_P_13` 的 24 小時寬表轉長表、缺值／單位／時間檢查、API 白名單與 Key 保護。
-- **8 項離線測試已通過**；案例資料位於 `data/fixtures/`，**全部為合成資料，不是官方監測結果**。
-- **未驗證**：真實 API 呼叫、長期歷史下載、臺中站點覆蓋、完整模型訓練、Agent、網站。不能將 W1 等同 P0 功能完成。
-- [W1 安裝、測試與 API 指引](docs/w1-data-integration.md)；Python 3.10+。
+- **已寫程式與測試**：環境部 `AQX_P_07` 測站座標解析、`AQX_P_432` 與 `AQX_P_488` 的官方 AQI／當小時 PM2.5／移動平均 PM2.5 分離、`AQX_P_13` 的 24 小時寬表轉長表、分頁擷取與嚴格白名單 `filters` 驗證、原始分頁回應快照保存（`--raw-dir`）與離線重算（`--input <raw_dir>`）、同站同時刻重複紀錄策略（`error`／`dedup_identical`／`flag_conflict`）、每站×每月完整率（明確區分整月日曆達標與局部視窗達標）與 1／3／6h 有效樣本對數統計、`.env` 環境變數載入（系統環境變數未設定或為空字串時自動回退讀取 `.env`）與 Key 保護。
+- **19 項離線測試已通過**；`data/fixtures/` 內均為**合成測試資料，不是官方監測結果**。
+- **本機已完成真實 API 驗證與原始快照重算**：確認臺中市 6 座官方測站（豐原 `28`、沙鹿 `29`、大里 `30`、忠明 `31`、西屯 `32`、臺灣大道 `88`）與 2024-03-11～2026-11-23 逐時 PM2.5 品質統計（一般站涵蓋 33 個月：其中 31 個整月日曆完整率 ≥80%，首尾 `2024-03` 與 `2026-11` 為局部邊界月）。
+- **未完成／待後續階段**：W2 Baseline 與 ML 模型訓練、Agent、Web 介面。不能將 W1 等同 P0 全部功能完成。
+- 詳見 [W1 安裝、測試與真實資料驗證報告](docs/w1-data-integration.md)；Python 3.10+。
 
-```bash
-python -m pip install -e .
-python -m unittest discover -s tests -v
-python -m airguard --dataset AQX_P_13 --input data/fixtures/aqx_p_13_synthetic.json
+### Windows PowerShell 設定與執行步驟（優先使用 `py`）
+
+1. 在專案根目錄將 `.env.example` 複製為 `.env`，並填入向環境部申請的 `MOENV_API_KEY`（`.env` 已被 `.gitignore` 排除，切勿提交至 GitHub；若系統已設定 `$env:MOENV_API_KEY`，程式會優先使用系統環境變數）：
+
+```powershell
+Copy-Item .env.example .env
+# 編輯 .env 填入 MOENV_API_KEY=您的環境部金鑰
+```
+
+2. 安裝套件（套用 `requirements.lock.txt` 版本約束）並執行離線單元測試與合成資料驗證：
+
+```powershell
+py -m pip install -c requirements.lock.txt -e .
+py -m unittest discover -s tests -v
+py -m airguard --dataset AQX_P_13 --input data/fixtures/aqx_p_13_synthetic.json
+```
+
+3. 使用本機 `.env` 或 `$env:MOENV_API_KEY` 執行環境部官方 API 真實資料核對、保存原始各頁回應快照（`--raw-dir`，位於已被 Git ignore 的 `data/raw/`）並驗證離線快照重算：
+
+```powershell
+py -m airguard --dataset AQX_P_07 --live --county 臺中市 --raw-dir data/raw/aqx_p_07_taichung
+py -m airguard --dataset AQX_P_432 --live --county 臺中市 --raw-dir data/raw/aqx_p_432_taichung
+py -m airguard --dataset AQX_P_488 --live --station-id 32 --limit 100 --raw-dir data/raw/aqx_p_488_site32
+py -m airguard --dataset AQX_P_13 --live --station-id 32 --limit 500 --max-pages 2 --on-duplicate dedup_identical --raw-dir data/raw/aqx_p_13_site32 --report-output data/normalized/aqx_p_13_site32_report.json
+
+# 不需網路與 API Key，直接由本機原始回應快照驗證 SHA256 並重算一致的品質報告
+py -m airguard --dataset AQX_P_13 --input data/raw/aqx_p_13_site32 --station-id 32 --on-duplicate dedup_identical
 ```
 
 

@@ -1,0 +1,4 @@
+# AirGuard AI W1 locked runtime dependencies
+# Managed per docs/dependency-policy.md
+# Package: python-dotenv (BSD-3-Clause) — loads local .env without overriding existing system environment variables
+python-dotenv==1.2.4
