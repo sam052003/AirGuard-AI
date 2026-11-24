@@ -11,7 +11,7 @@ Closes #<!-- GitHub Issue 編號，無則先建立 -->
 - API、資料欄位、模型或 Domain Rules 變更（如有）：
 
 ## 實際驗證（只填執行過的）
-- [ ] `python -m pip install -e .`
+- [ ] `python -m pip install -c requirements.lock.txt -e .`（Windows 可用 `py`）
 - [ ] `python -m unittest discover -s tests -v`
 - [ ] 本次更動專用測試：
 - [ ] CI 已通過（若尚未跑完寫「pending」）
@@ -35,4 +35,4 @@ Closes #<!-- GitHub Issue 編號，無則先建立 -->
 - **PR 最新 HEAD SHA**：
 - **請審核**：實際 diff、相依測試、SRS、AGENTS.md、API 契約與安全邊界
 - **審核狀態**：waiting / changes requested / rereview requested / reviewed
-- **合併**：必須由組員確認 CI、未處理 Blocker 與實際審核後操作；AI 自述「通過」不構成 GitHub Review 批准
+- **合併**：目前由唯一專案負責人確認最新 CI／未處理 BLOCKER／實測及風險後決定。無須第二位真人 Reviewer；ChatGPT `COMMENTED` Review 不等於 GitHub `APPROVED`。Antigravity 不得自行 Merge，ChatGPT 僅在負責人明確要求時代為合併。

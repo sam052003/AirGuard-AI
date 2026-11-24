@@ -5,7 +5,7 @@
 ## 角色與溝通
 - **Antigravity：主要實作者**。從 Issue 讀需求，在功能分支改程式、補測試、提交 PR，於 PR 描述實際驗證結果。
 - **ChatGPT：審核者**。取得 PR URL 後，閱讀實際 diff、需求、測試、架構與來源；透過 GitHub Review／Comment 留下 blocking／non-blocking 意見及驗收結論。不能以未執行的測試聲稱成功。
-- **組員：決策與合併負責人**。審視兩者意見、執行需要私人 API Key 的測試、決定合併；所有 GitHub 寫入權限與批准由實際帳號權限決定。ChatGPT 不會自動監看 GitHub；每次請使用者提供 PR URL 觸發審核。
+- **專案負責人（目前僅一人操作）**：唯一的需求與合併決策者，保管本機 API Key、確認驗證證據並決定何時 Merge。第二組仍為三人課程團隊，但不預設其他兩位組員參與實作或審核。ChatGPT 不會自動監看 PR；負責人需提供 PR URL 啟動審查。
 - **GitHub 是唯一跨工具交接依據**：Issue 定義工作、PR 提供程式及證據、Review 記錄審核、Commit 保留修正、README/DESIGN 記錄事實。不要把只有聊天中出現的需求當成已經核准。
 
 ## 必須遵守的工程限制
@@ -20,11 +20,11 @@
 
 ## 交付與驗收流程
 1. 以 `main` 最新版本建立 `feat/<issue>-<short-name>`、`fix/<issue>-<short-name>` 或 `docs/<short-name>`。
-2. 先把 Issue 的**驗收條件**轉成測試。至少執行 `python -m pip install -e .`、`python -m unittest discover -s tests -v`；必要時另跑 CLI／真實資料人工驗證。禁止更改測試讓不正確功能通過。
+2. 將 Issue 的驗收條件轉成測試。目前使用 `python -m pip install -c requirements.lock.txt -e .`（Windows 可用 `py`）及 `python -m unittest discover -s tests -v`；必要時由負責人在本機進行真實 API 測試。測試不能為迎合錯誤行為而被削弱。
 3. PR 必須連結 Issue、描述資料來源、重要設計、變更檔案、實際測試指令和結果、風險、截圖（如有 UI）、尚未完成的部分；使用 `.github/PULL_REQUEST_TEMPLATE.md`。
-4. ChatGPT Review：先閱讀 PR diff，不只讀 PR 摘要；標明 **BLOCKER / MAJOR / MINOR**，指出路徑、原因、重現方式、建議修正，並給出 `CHANGES_REQUESTED` 或 `REVIEWED_WITH_CAVEATS`。GitHub Review 能否 APPROVE 由帳號權限決定，不能用文字假冒正式核准。
+4. ChatGPT Review：逐檔閱讀 PR 最新 HEAD SHA 的 diff、測試與 CI，標記 BLOCKER / MAJOR / MINOR，給出 CHANGES_REQUESTED / REVIEWED_WITH_CAVEATS / READY_FOR_HUMAN_MERGE。若 GitHub 審核身分與 PR 作者相同，使用 `COMMENTED` 留紀錄，不能自稱正式 `APPROVED`。
 5. Antigravity 依 Review 修正、Push 同一分支、回覆每條評論並更新測試證據；ChatGPT 重新審核最新 Commit。
-6. **由組員確認 CI 綠燈、審核意見處理及合併條件後合併**。如設定分支保護，依 GitHub Rulesets 落實；僅寫此檔不等於已啟用保護。
+6. **由專案負責人自行確認並合併**：必須核對 PR 最新 SHA 的 CI 通過、沒有未處理 BLOCKER、證據與風險可接受；不要求第二位真人 Reviewer 核准。Antigravity 不自行合併，ChatGPT 僅在負責人明確提出合併指令時才代為操作。若設定 Ruleset，建議 PR + 必要 CI + 禁止 Force Push，勿強制另一位人類 Approve；文件不會自動更動 GitHub Ruleset。
 7. Merge 後維護 Issue 狀態及 README/DESIGN 的「已驗證／待驗證」資訊；若有部署才填入真實 Demo。
 
 詳細：[協作流程](docs/development-workflow.md)｜[Reviewer 清單](docs/reviewer-checklist.md)｜[W1 交接 Prompt](docs/prompts/antigravity-w1-next.md)。
