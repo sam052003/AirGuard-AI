@@ -127,7 +127,7 @@ py -m airguard --dataset AQX_P_13 --input data/raw/aqx_p_13_site32 --station-id 
 
 ## 9. Antigravity × ChatGPT × GitHub 開發協作規範（2026-11-24）
 
-**主要流程：GitHub Issue → Antigravity 功能分支＋程式／測試 → Pull Request → ChatGPT 讀實際 diff 並 Review → Antigravity 修正 → 組員確認 CI／審核後 Merge。** ChatGPT 不能自動監看 GitHub；每次 PR 建立或更新後，由組員將 PR URL 貼到 ChatGPT 要求審核。
+**目前實際由一位專案負責人主導，Antigravity 負責程式實作，ChatGPT 負責 PR 技術審核**（第二組三人課程提案資料維持不變，不預設另外兩人參與開發）。流程：GitHub Issue → Antigravity 功能分支與測試 → Pull Request → ChatGPT 查看最新 Diff／CI 並留言 → Antigravity 修正（需要時）→ **專案負責人確認 CI 通過、無未解決 BLOCKER 後決定 Merge**。不需第二位真人核准；ChatGPT `COMMENTED` 不等於正式 GitHub `APPROVED`，亦不會自動巡檢或合併。
 
 - [AGENTS.md](AGENTS.md)：提供 Antigravity 與 ChatGPT 的權責、P0／P1 邊界與不允許行為。
 - [協作流程](docs/development-workflow.md)、[Reviewer 固定清單](docs/reviewer-checklist.md)。
@@ -137,7 +137,7 @@ py -m airguard --dataset AQX_P_13 --input data/raw/aqx_p_13_site32 --station-id 
 - [Antigravity W1 下一步 Prompt](docs/prompts/antigravity-w1-next.md)與[ChatGPT PR 審核 Prompt](docs/prompts/chatgpt-pr-review.md)。
 - [GitHub Actions Python CI](.github/workflows/python-ci.yml)：只驗證離線合成資料／契約範例；真實官方 API 須在組員持有金鑰的本機另行驗證。
 
-PR 使用 `.github/PULL_REQUEST_TEMPLATE.md`，Issue 使用 `.github/ISSUE_TEMPLATE/`；`main` 分支保護／Rulesets **需要 Repository 管理員另外於 GitHub 設定**，新增 CI 檔本身不會啟用合併阻擋。
+.github/PULL_REQUEST_TEMPLATE.md 為 PR 模板，`.github/ISSUE_TEMPLATE/` 為 Issue 模板；建議倉庫管理員為 `main` 啟用 PR、Python CI 與禁止 Force Push，**但不要設定強制其他 Reviewer Approve**。目前 GitHub Rulesets 並未自動啟用，文件和 CI 檔本身也不會變更倉庫保護設定。
 
 
 ## 10. 第二組定稿版 Word／PPT（Deep Research 補強）

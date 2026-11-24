@@ -7,7 +7,7 @@
 1. 從 `main` 建立新的工作分支，例如 `feat/data-etl`、`feat/ml-baseline`、`feat/agent-planner`、`feat/web-ui` 或 `docs/proposal`。
 2. 每次提交（Commit）說明改動目的；可用 `feat:`、`fix:`、`docs:`、`test:` 等前綴，後接繁體中文說明。
 3. 提交 Pull Request（PR）時寫明變更摘要、影響範圍、測試或驗證證據，以及目前限制。
-4. 原則上由非作者的組員檢視變更後再合併至 `main`；若受人數或時間限制無法完成，應在 PR 說明原因。
+4. **目前由單一專案負責人決定合併**。ChatGPT 審核實際 PR diff、留下 `COMMENTED` Review；負責人確認 CI、BLOCKER 和實測證據後即可合併，不強制其他組員核准。
 5. 若 PR 改動資料格式、API、模型或 Domain Rules，務必同步更新 `DESIGN.md`、相關測試與文件。
 6. 請勿提交 `.env`、API Key、未經授權的大型原始資料或私人使用者資訊。
 
@@ -33,8 +33,8 @@
 
 前述內容為初期建議。自 v3 程式開發開始，以 [AGENTS.md](AGENTS.md)、[完整 GitHub 交接流程](docs/development-workflow.md) 及 [PR Template](.github/PULL_REQUEST_TEMPLATE.md) 作為**目前開發協作規範**：
 
-- Antigravity 主寫程式、補測試並提交 PR；ChatGPT 依 **最新 diff／HEAD SHA** 審核並把問題記錄在 GitHub PR；組員負責正式合併。
+- Antigravity 主寫程式並提交 PR；ChatGPT 依最新 diff／HEAD SHA 審核並留在 GitHub；目前由**一位專案負責人**操作合併，不虛構其他組員分工。
 - 不直接向 `main` 推功能程式，優先 Issue → feature branch → PR → review → CI → merge。
-- PR 需提供真實測試證據與失效邊界；由組員確認 Blocker 處理後再合併。
-- GitHub 連線無法自動讓 ChatGPT 持續監看 PR；請每次貼 PR URL 要求檢查。若 Review 是同一 GitHub 帳號不能自我批准，由不同組員完成正式 GitHub Approve。
+- PR 需提供真實測試證據與失效邊界；專案負責人確認無 BLOCKER、CI 通過且風險可接受後合併。
+- ChatGPT 不會自動巡檢 PR，請負責人每次提供 PR URL。當 GitHub 審核帳號與 PR 作者相同，僅能留下 `COMMENTED` 而不是 `APPROVED`；這不阻擋本專案單人模式的人工作業。
 - 本規範不指定三位組員的模組分工；不把靜態設計規格當成已實作的證據。

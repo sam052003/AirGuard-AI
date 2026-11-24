@@ -31,4 +31,4 @@ CI: success | pending | failed | unavailable (include link)
 是否建議人工合併：YES/NO；未檢查的項目：...
 ```
 
-`READY_FOR_HUMAN_MERGE` 只是**審核建議**，不是已經批准、CI 綠燈或已合併；正式 GitHub Approved Review 必須由具有權限且非 PR 作者的帳號執行。
+`READY_FOR_HUMAN_MERGE` 僅為 ChatGPT 技術審核建議，不是 GitHub 正式核准、CI 綠燈或已經合併。**目前只有一位人類專案負責人**，不需其他組員核准：負責人檢查最新 SHA 的 CI、無未處理 BLOCKER 與證據後決定 Merge。GitHub 同帳號自我審查只留 `COMMENTED`；ChatGPT 不因審核完成而自動合併。

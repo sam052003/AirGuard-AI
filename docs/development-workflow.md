@@ -1,6 +1,6 @@
 # 第二組｜Antigravity × ChatGPT × GitHub 協作流程
 
-**正式分工模式（工具）**：Antigravity 實作、ChatGPT 審核、GitHub 儲存需求與交接。三位組員未預先指定各工作模組；組員自行安排 Issue 與最終合併決策。
+**正式運作模式**：第二組仍為三人課程團隊，但目前只有一位專案負責人實際管理與開發。Antigravity 寫程式、ChatGPT 做 GitHub Review，負責人完成最終驗收及 Merge。**不預設其他組員參與，也不要求第二位真人 Review**。
 
 ## 唯一交接流程
 
@@ -11,7 +11,7 @@ flowchart LR
   P --> R["ChatGPT：讀 diff／Review／阻擋項"]
   R --> D{"需要修改？"}
   D -- 是 --> A
-  D -- 否 --> H["組員檢查 CI＋Review"]
+  D -- 否 --> H["專案負責人檢查 CI＋Review"]
   H --> M["GitHub 合併 main"]
   M --> I2["更新 Issue／README／DESIGN"]
 ```
@@ -30,10 +30,10 @@ flowchart LR
 - 修正後使用者再次傳同一個 PR URL 請重新審核**最新 SHA**。ChatGPT 不會在沒有新對話指令時自動巡檢或合併。
 
 ### 人工作業與權限
-- **合併前**：CI 完成且通過、無未處理 Blocker、需求符合、實測記錄誠實、至少一位非作者組員 Review（如可行）。
-- **GitHub Rulesets**：由倉庫管理員在 Settings → Rules → Rulesets 設定 `main` 必須經 PR、必要狀態檢查、禁止 Force Push；若提供的帳號或方案不支援，至少採團隊協議。只是新增 YAML 不會自動替 `main` 設定分支保護。
-- 若 ChatGPT 以**同一 GitHub 使用者帳號**寫 Review，GitHub 不允許同帳號替自己的 PR 進行正式核准；此時採 COMMENT，改由其他組員作正式審核。
-- API Key 僅存本機或部署 Secrets。外部真實資料需由能合法存取的組員執行；CI 不要求金鑰。
+- **合併前**：負責人核對最新 PR HEAD SHA 與 Python 3.11／3.12 CI、需求／文件與實測資料、沒有未解決 BLOCKER。非阻擋事項需在 PR／Issue 留下後續追蹤。ChatGPT 的「建議合併」不代表 Merge 已授權。
+- **GitHub Rulesets**：建議在 Settings → Rules → Rulesets 設定必須經 PR、必要 Python CI 且禁止 Force Push；目前僅一位人類負責人，**請勿設定必須有其他 Reviewer APPROVE**。倉庫管理員須自行設定，文件本身不會修改 Rulesets。
+- 若 ChatGPT 與 PR 作者使用同一 GitHub 帳號，GitHub 不允許自己正式核准自己的 PR；使用 `COMMENTED` 記錄技術審核即可，不用等待其他真人核准。最終是否 Merge 由專案負責人明確決定，ChatGPT 不會在未獲指示時自行合併。
+- API Key 僅存在本機 `.env` 或部署 Secrets；需要真實資料時由專案負責人在本機執行。CI 一律使用合成資料。
 
 ## 必要命名及交接格式
 
@@ -45,7 +45,7 @@ PR 標題：`feat(data): 加入逐時資料品質報告 (#12)`
 
 PR 內：`Closes #12`、變更摘要、實測命令及輸出、風險與回退、設計修改、未驗證項目。
 
-Review 內：`Verdict: CHANGES_REQUESTED / REVIEWED_WITH_CAVEATS`，每項為 `[BLOCKER|MAJOR|MINOR] 路徑：原因→驗證→修正`。
+Review 內：`Verdict: CHANGES_REQUESTED / REVIEWED_WITH_CAVEATS / READY_FOR_HUMAN_MERGE`，逐項提供 `[BLOCKER|MAJOR|MINOR] 路徑：原因→驗證→修正`。
 
 ## 最後期末交付物
 在真正完成後才新增真實的安裝／執行、資料、模型版本、指標、Demo、Final PPT（超過 20 頁）、YouTube 影片（超過 10 分鐘）、限制與結論；不得因 PR 文件寫了預期結果就宣稱已實測。
