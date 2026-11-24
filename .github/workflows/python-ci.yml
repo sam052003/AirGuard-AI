@@ -31,8 +31,8 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install local W1 package
-        run: python -m pip install -e .
+      - name: Install local W1 package with locked constraints
+        run: python -m pip install -c requirements.lock.txt -e .
       - name: Compile Python modules
         run: python -m compileall -q src tests
       - name: Run offline tests

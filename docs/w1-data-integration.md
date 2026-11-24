@@ -1,6 +1,6 @@
 # W1｜環境部資料接入、品質檢核與真實驗證報告
 
-**範圍**：完成 `AQX_P_07`、`AQX_P_432`、`AQX_P_488`、`AQX_P_13` 四組官方資料集 JSON 解析、逐時長表轉換、分頁擷取、缺值／異常／重複值／單位／時區檢查、每站×每月資料品質統計、`.env` 環境變數管理及 18 項離線單元測試，並透過本機 `MOENV_API_KEY` 完成臺中市 6 座官方測站的真實資料驗證。**尚未進行 ML 模型訓練、Agent 或 Web 開發。**
+**範圍**：完成 `AQX_P_07`、`AQX_P_432`、`AQX_P_488`、`AQX_P_13` 四組官方資料集 JSON 解析、逐時長表轉換、分頁擷取、原始回應快照保存與離線 SHA256 重算（`--raw-dir`／`--input`）、缺值／異常／重複值／單位／時區檢查、每站×每月資料品質統計、`.env` 環境變數管理及 19 項離線單元測試，並於本機透過 `MOENV_API_KEY` 完成臺中市 6 座官方測站的真實資料驗證。**GitHub Actions CI 僅執行離線合成 fixture 測試；ChatGPT Reviewer 未獨立持有金鑰執行線上擷取；目前尚未進行 ML 模型訓練、Agent 或 Web 開發。**
 
 ## 1. 官方資料集與實測欄位格式
 
@@ -18,17 +18,17 @@
 1. **設定方式**：將專案根目錄 `.env.example` 複製為 `.env`，並填入 `MOENV_API_KEY`（`.gitignore` 已排除 `.env` 與 `.env.*`）。
 2. **載入優先序**：`MOENVClient` 透過 `resolve_api_key()` 依序讀取：
    - 明確傳入的 `api_key` 參數
-   - 已存在的系統環境變數 `MOENV_API_KEY`（優先於 `.env`）
-   - 專案根目錄 `.env`（使用 `python-dotenv` 讀取，不污染全域環境變數）
-3. **錯誤提示與安全保護**：當系統環境變數與 `.env` 皆缺少金鑰時，CLI 會清楚提示如何建立 `.env` 或設定 `$env:MOENV_API_KEY` 並以 exit code `1` 結束，不會直接崩潰或將金鑰輸出至標準輸出、錯誤日誌、測試或例外訊息中。
+   - 已存在且非空白的系統環境變數 `MOENV_API_KEY`（優先於 `.env`）
+   - 專案根目錄 `.env`（當系統環境變數未設定或為空字串時，自動使用 `python-dotenv` 回退讀取 `.env`，且不污染全域環境變數）
+3. **錯誤提示與安全保護**：當系統環境變數與 `.env` 皆缺少有效金鑰時，CLI 會清楚提示如何建立 `.env` 或設定 `$env:MOENV_API_KEY` 並以 exit code `1` 結束，不會直接崩潰或將金鑰輸出至標準輸出、錯誤日誌、原始快照 manifest、測試或例外訊息中。
 
-## 3. Windows PowerShell 安裝與操作指令（優先使用 `py`）
+## 3. Windows PowerShell 安裝、原始快照保存與離線重算指令（優先使用 `py`）
 
 ```powershell
-# 1. 安裝套件（含 python-dotenv>=1.0.0,<2.0.0，版本鎖定於 requirements.lock.txt）
-py -m pip install -e .
+# 1. 安裝套件（使用 -c requirements.lock.txt 套用鎖定版本 python-dotenv==1.2.4）
+py -m pip install -c requirements.lock.txt -e .
 
-# 2. 執行 18 項離線單元測試（僅使用合成資料與假金鑰，不讀真實 .env）
+# 2. 執行 19 項離線單元測試（僅使用合成資料與假金鑰，透過 load_dotenv_file=False 或臨時檔隔離本機真實 .env）
 py -m unittest discover -s tests -v
 
 # 3. 離線合成資料煙霧測試（站碼 991/992/993/999 均為合成測試值）
@@ -37,12 +37,21 @@ py -m airguard --dataset AQX_P_432 --input data/fixtures/aqx_p_432_synthetic.jso
 py -m airguard --dataset AQX_P_488 --input data/fixtures/aqx_p_488_synthetic.json
 py -m airguard --dataset AQX_P_13 --input data/fixtures/aqx_p_13_synthetic.json
 
-# 4. 線上真實官方資料驗證與分頁品質報告（需本機 .env 或 $env:MOENV_API_KEY）
-py -m airguard --dataset AQX_P_07 --live --county 臺中市 --output data/normalized/taichung_stations.jsonl --report-output data/normalized/aqx_p_07_taichung_report.json
-py -m airguard --dataset AQX_P_432 --live --county 臺中市 --output data/normalized/taichung_aqi_live.jsonl --report-output data/normalized/aqx_p_432_taichung_report.json
-py -m airguard --dataset AQX_P_488 --live --station-id 32 --limit 100 --output data/normalized/taichung_32_hist_aqi.jsonl --report-output data/normalized/aqx_p_488_site32_report.json
-py -m airguard --dataset AQX_P_13 --live --station-id 32 --limit 500 --max-pages 2 --on-duplicate dedup_identical --output data/normalized/taichung_32_hourly_pm25.jsonl --report-output data/normalized/aqx_p_13_site32_report.json
+# 4. 線上真實官方資料驗證並將各頁原始回應 bytes 與 manifest.json 保存於 data/raw/（已被 .gitignore 排除，不含 API Key）
+py -m airguard --dataset AQX_P_07 --live --county 臺中市 --raw-dir data/raw/aqx_p_07_taichung --output data/normalized/taichung_stations.jsonl --report-output data/normalized/aqx_p_07_taichung_report.json
+py -m airguard --dataset AQX_P_432 --live --county 臺中市 --raw-dir data/raw/aqx_p_432_taichung --output data/normalized/taichung_aqi_live.jsonl --report-output data/normalized/aqx_p_432_taichung_report.json
+py -m airguard --dataset AQX_P_488 --live --station-id 32 --limit 100 --raw-dir data/raw/aqx_p_488_site32 --output data/normalized/taichung_32_hist_aqi.jsonl --report-output data/normalized/aqx_p_488_site32_report.json
+py -m airguard --dataset AQX_P_13 --live --station-id 32 --limit 500 --max-pages 2 --on-duplicate dedup_identical --raw-dir data/raw/aqx_p_13_site32 --output data/normalized/taichung_32_hourly_pm25.jsonl --report-output data/normalized/aqx_p_13_site32_report.json
+
+# 5. 離線快照重算：不需網路連線或 API Key，直接讀取 data/raw/ 下的原始分頁 bytes，逐頁核對 SHA256 並重算完全一致的品質報告
+py -m airguard --dataset AQX_P_13 --input data/raw/aqx_p_13_site32 --station-id 32 --on-duplicate dedup_identical --report-output data/normalized/aqx_p_13_site32_replay_report.json
 ```
+
+### 原始快照目錄格式（`--raw-dir`）
+當指定 `--raw-dir data/raw/aqx_p_13_site32` 時，程式會在該目錄下寫入：
+- `page_0000_offset_0.json`、`page_0001_offset_500.json`：環境部 API 各分頁回應的**原始未修改 bytes**。
+- `manifest.json`：記錄 `source_id`、`source_url`、`query_params_without_api_key`（不含 `api_key`）、`retrieved_at_utc`、整體 `sha256`、`page_sha256s` 與各分頁檔名及筆數。
+當後續以 `--input data/raw/aqx_p_13_site32` 離線重跑時，`load_raw_snapshot()` 會逐頁讀取原始 bytes 並重新計算 SHA256，若任何分頁檔案遭竄改或與 `manifest.json` 不符即拋出 `DataError`，確保 2024–2026 品質統計完全可重算。
 
 ## 4. 臺中市官方候選監測站清單（`AQX_P_07` 與 `AQX_P_432` 實測核對）
 
@@ -65,14 +74,14 @@ py -m airguard --dataset AQX_P_13 --live --station-id 32 --limit 500 --max-pages
 
 使用分頁下載（`limit=500, max_pages=2`，查詢條件 `filters=siteid,EQ,<id>|itemengname,EQ,PM2.5`，重複處理策略 `--on-duplicate dedup_identical`）實測結果如下：
 
-| `station_id` | 站名 | 可得日期範圍（Asia/Taipei） | 涵蓋月份（可訓練月） | 預期視窗時數 | 實際取得時槽 | 有效時數 (`ok`) | 紀錄缺值 (`missing`) | 視窗未觀測時數 | 異常時數 (`invalid`) | 視窗完整率 (`window_coverage`) | 最大連續缺失 | 1h 有效樣本對 | 3h 有效樣本對 | 6h 有效樣本對 | 批次 SHA256（前 16 碼） |
+| `station_id` | 站名 | 可得日期範圍（Asia/Taipei） | 涵蓋月份（整月達標／局部視窗達標） | 預期視窗時數 | 實際取得時槽 | 有效時數 (`ok`) | 紀錄缺值 (`missing`) | 視窗未觀測時數 | 異常時數 (`invalid`) | 視窗完整率 (`window_coverage`) | 最大連續缺失 | 1h 有效樣本對 | 3h 有效樣本對 | 6h 有效樣本對 | 批次 SHA256（前 16 碼） |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| `28` | 豐原 | 2024-03-11～2026-11-23 | 33 (33) | 23,712 | 23,496 | 23,162 | 334 | 216 | 0 | 97.68% | 73h | 22,983 | 22,932 | 22,873 | `c476aafe4e7c1ab4` |
-| `29` | 沙鹿 | 2024-03-11～2026-11-23 | 33 (33) | 23,712 | 23,496 | 23,135 | 361 | 216 | 0 | 97.57% | 90h | 22,946 | 22,906 | 22,866 | `bb531344c5e92a42` |
-| `30` | 大里 | 2024-03-11～2026-11-23 | 33 (33) | 23,712 | 23,496 | 23,027 | 469 | 216 | 0 | 97.11% | 75h | 22,822 | 22,750 | 22,688 | `baf0b40a5ad283bd` |
-| `31` | 忠明 | 2024-03-11～2026-11-23 | 33 (33) | 23,712 | 23,496 | 23,214 | 282 | 216 | 0 | 97.90% | 96h | 23,042 | 23,004 | 22,971 | `b83c5f8f99eebff2` |
-| `32` | 西屯 | 2024-03-11～2026-11-23 | 33 (33) | 23,712 | 23,496 | 23,046 | 450 | 216 | 0 | 97.19% | 99h | 22,849 | 22,797 | 22,745 | `68e8247f2f3745be` |
-| `88` | 臺灣大道 | 2026-01-02～2026-11-23 | 11 (11) | 7,824 | 7,680 | 7,471 | 209 | 144 | 0 | 95.49% | 77h | 7,401 | 7,369 | 7,326 | `7d7963be02125c3a` |
+| `28` | 豐原 | 2024-03-11～2026-11-23 | 33 (31 整月 + 2 局部) | 23,712 | 23,496 | 23,162 | 334 | 216 | 0 | 97.68% | 73h | 22,983 | 22,932 | 22,873 | `c476aafe4e7c1ab4` |
+| `29` | 沙鹿 | 2024-03-11～2026-11-23 | 33 (31 整月 + 2 局部) | 23,712 | 23,496 | 23,135 | 361 | 216 | 0 | 97.57% | 90h | 22,946 | 22,906 | 22,866 | `bb531344c5e92a42` |
+| `30` | 大里 | 2024-03-11～2026-11-23 | 33 (31 整月 + 2 局部) | 23,712 | 23,496 | 23,027 | 469 | 216 | 0 | 97.11% | 75h | 22,822 | 22,750 | 22,688 | `baf0b40a5ad283bd` |
+| `31` | 忠明 | 2024-03-11～2026-11-23 | 33 (31 整月 + 2 局部) | 23,712 | 23,496 | 23,214 | 282 | 216 | 0 | 97.90% | 96h | 23,042 | 23,004 | 22,971 | `b83c5f8f99eebff2` |
+| `32` | 西屯 | 2024-03-11～2026-11-23 | 33 (31 整月 + 2 局部) | 23,712 | 23,496 | 23,046 | 450 | 216 | 0 | 97.19% | 99h | 22,849 | 22,797 | 22,745 | `68e8247f2f3745be` |
+| `88` | 臺灣大道 | 2026-01-02～2026-11-23 | 11 (10 整月 + 1 局部) | 7,824 | 7,680 | 7,471 | 209 | 144 | 0 | 95.49% | 77h | 7,401 | 7,369 | 7,326 | `7d7963be02125c3a` |
 
 - **完整 SHA256 對照**：
   - `28`（豐原）：`c476aafe4e7c1ab4c198cdb5e8a469faf039e8a920afd551b1d3489b6bb843d8`（Page 0: `18b640e649eab2d48b8252fb2963131000556a3a52ba77357a4f3a622135cb40`；Page 1: `76406284da12c8dc4c244aeef36de6f46e8f04f3cdf34ebb773bb3a0b7a90b8b`）
@@ -99,14 +108,15 @@ py -m airguard --dataset AQX_P_13 --live --station-id 32 --limit 500 --max-pages
 | `2026-07` | 744 | 744 | 720 | 702 | 18 | 24 | 94.35% | 94.35% | 24h | 696 | 692 | 686 | `true` |
 | `2026-08` | 744 | 744 | 744 | 654 | 90 | 0 | 87.90% | 87.90% | 85h | 649 | 649 | 649 | `true` |
 | `2026-09` | 720 | 720 | 720 | 717 | 3 | 0 | 99.58% | 99.58% | 1h | 714 | 714 | 714 | `true` |
-| `2026-10` | 744 | 744 | 744 | 740 | 4 | 0 | 99.46% | 99.46% | 1h | 736 | 736 | 736 | `true` |
-| `2026-11` | 720 | 552 | 552 | 548 | 4 | 0 | 76.11% | 99.28% | 1h | 543 | 542 | 538 | `true` |
+| `2026-10` | 744 | 744 | 744 | 740 | 4 | 0 | 99.46% | 99.46% | 1h | 736 | 736 | 736 | `true`（整月達標） |
+| `2026-11` | 720 | 552 | 552 | 548 | 4 | 0 | 76.11% | 99.28% | 1h | 543 | 542 | 538 | `is_window_trainable=true` / `is_calendar_month_trainable=false` |
 
-> 註：`2026-11` 觀測截止至 `2026-11-23T23:00:00+08:00`（共 23 日＝552 小時），因此觀測視窗內完整率為 `548 / 552 = 99.28%`，而整月日曆完整率為 `548 / 720 = 76.11%`。
+> 註：品質報告明確區分 `is_calendar_month_trainable`（整月日曆完整率 `calendar_coverage >= 80%` 且 `valid_hours >= 336`）與 `is_window_trainable`（已取得片段視窗完整率 `window_coverage >= 80%` 且 `valid_hours >= 336`）。西屯站 33 個涵蓋月份中，有 **31 個整月日曆達標月份**（`2024-04`～`2026-10`），而首月 `2024-03`（`2024-03-11` 起，504 小時視窗，`calendar_coverage=67.20%`、`window_coverage=99.21%`）與當月 `2026-11`（截至 `2026-11-23`，552 小時視窗，`calendar_coverage=76.11%`、`window_coverage=99.28%`）為**首尾非完整邊界月**（僅局部視窗達標，不計入整月完整月份）。
 
 ## 7. 已驗證的資料限制與風險（W1 實測紀錄）
 
-1. **上游重複日紀錄**：`AQX_P_13` 在部分日期（例如 `2026-01-31`、`2026-02-28`、`2026-03-31`、`2026-04-12`、`2026-09-26..30` 等，一般站前 1,000 筆中含有 21 筆重複日，共 504 個小時槽位）存在完全相同的重複 JSON 物件。預設 `on_duplicate="error"` 會嚴格阻擋；批次清洗使用 `on_duplicate="dedup_identical"` 僅在 24 小時數值與品質旗標完全一致時去重並寫入 `duplicate_summary`（實測 `conflict_flagged_invalid = 0`），若出現數值衝突仍會拋出 `DataError`。
+1. **上游重複日紀錄**：`AQX_P_13` 在部分日期（例如 `2026-01-31`、`2026-02-28`、`2026-03-31`、`2026-04-12`、`2026-09-26..30` 等，一般站前 1,000 筆中含有 21 筆重複日，共 504 個小時槽位）存在完全相同的重複 JSON 物件。預設 `on_duplicate="error"` 會嚴格阻擋；批次清洗使用 `on_duplicate="dedup_identical"` 僅在 24 小時數值與品質旗標完全一致時去重並寫入 `duplicate_summary`（實測 `conflict_flagged_invalid = 0`），若出現數值衝突仍會拋出 `DataError`。若使用 `on_duplicate="flag_conflict"`，則會先將衝突前的原始數值與品質旗標記錄至 `duplicate_log`（`previous_value_ug_m3`、`conflicting_value_ug_m3`），再將該時槽設為 `null` 與 `invalid`。
 2. **整日未出現在 API 回應的缺漏日**：在 `2024-03-11`～`2026-11-23`（共 988 個日曆日）中，各一般站實際含 979 個不重複日期，有 9 個日曆日（216 小時，如 `2026-05`、`2026-06`、`2026-07` 各缺 1 日）未出現在 `AQX_P_13` 回應中。`station_month_quality_report` 將其明確計入 `unobserved_hours` 與 `max_consecutive_missing_hours`（≥24h），絕不自動內插或補 0。
-3. **API 分頁與 `filters` 掃描上限**：`AQX_P_13` 未加 `filters` 時，單日全臺約 80 站 × 18 測項 ≈ 1,440 筆；加上 `filters=siteid,EQ,32|itemengname,EQ,PM2.5` 後，前兩頁（`offset=0, limit=500` 與 `offset=500, limit=500`，合計 1,000 筆日紀錄）可在約 1.3 秒內取回約 2.7 年逐時資料。但當 `offset >= 1000` 搭配 `filters` 時，環境部後端資料庫因全表掃描逾時（>20 秒）。因此 API 線上分頁適合取得近 1,000 筆日紀錄（約 33 個月），更早期歷史資料應搭配官方按月歷史檔匯入離線 `--input` 流程。
-4. **回測時間語意限制**：`AQX_P_13` 與 `AQX_P_488` 僅提供觀測時刻（`MonitorDate`＋小時、`DataCreationDate`），未提供歷史每筆資料當下的實際發布延遲時間戳（`published_at_utc=null`）。因此後續 W2 歷史回測在報告中一律標記為 `reconstructed_from_observed_at`（依觀測時間重建之離線回測），不得宣稱為嚴格 point-in-time 即時發布回測。
+3. **極端 PM2.5 異常值門檻依據與可配置性**：依據[環境部空氣品質指標（AQI）計算方式說明](https://airtw.moenv.gov.tw/cht/Information/Standard/AirQualityIndicatorNew.aspx)，PM2.5 最高分級（AQI 500）之濃度上限為 `500.4 μg/m³`，而環境部自動監測站 β 射線法／FEM 儀器之小時濃度物理量測上限通常為 `1000 μg/m³`。因此程式預設以 `MAX_VALID_PM25_UG_M3 = 1000.0` 作為儀器／傳輸異常值（`quality_flag="invalid"`）門檻，並於 CLI 提供 `--max-pm25` 與函式參數 `max_valid_pm25_ug_m3`（亦可設為 `None` 停用上限裁切），同時記錄於品質報告 `qc_thresholds` 中，避免未經說明地截斷極端污染事件。
+4. **API 分頁與 `filters` 掃描上限**：`AQX_P_13` 未加 `filters` 時，單日全臺約 80 站 × 18 測項 ≈ 1,440 筆；加上 `filters=siteid,EQ,32|itemengname,EQ,PM2.5` 後，前兩頁（`offset=0, limit=500` 與 `offset=500, limit=500`，合計 1,000 筆日紀錄）可在約 1.3 秒內取回約 2.7 年逐時資料。但當 `offset >= 1000` 搭配 `filters` 時，環境部後端資料庫因全表掃描逾時（>20 秒）。因此 API 線上分頁適合取得近 1,000 筆日紀錄（約 33 個月），更早期歷史資料應搭配官方按月歷史檔匯入離線 `--input` 流程。
+5. **回測時間語意與驗證邊界**：`AQX_P_13` 與 `AQX_P_488` 僅提供觀測時刻（`MonitorDate`＋小時、`DataCreationDate`），未提供歷史每筆資料當下的實際發布延遲時間戳（`published_at_utc=null`）。因此後續 W2 歷史回測在報告中一律標記為 `reconstructed_from_observed_at`（依觀測時間重建之離線回測），不得宣稱為嚴格 point-in-time 即時發布回測。此外，本報告中之臺中 6 站統計與 SHA256 為本機持有 `MOENV_API_KEY` 之實測紀錄（可透過本機 `--raw-dir` 保存之原始快照以 `--input` 離線重算驗證）；GitHub CI 僅驗證合成資料。
