@@ -1,108 +1,83 @@
-# AirGuard AI — 智慧空氣品質預測與生活決策代理人
+# AirGuard AI｜智慧空氣品質預測與生活決策代理人
 
-**AirGuard AI** 是《物聯網數據分析與應用》的**團體期末專題**，結合臺灣環境部公開空氣品質資料、短期 PM2.5 預測、工具導向 AI Agent 與官方 AQI 活動指引，協助使用者比較戶外活動時段、理解污染風險及查看分析依據。
+**物聯網數據分析與應用（AIoT-DA）｜三人團體期末專題**  
+**研究與設計修訂：2026-11-24｜版本：v3（依公開資料重新收斂可實作範圍）**
 
-> **專案階段：提案文件已完成，系統實作與實驗尚未進行。** 本倉庫提供一致的技術設計、正式提案、資料來源與評估規格；目前不宣稱已有可執行網站、已訓練模型或測試成績。
+> **專案目前屬設計與提案階段。** 本 README 描述**計畫實作的功能**，不表示已完成 Web、ML、Agent 或任何實驗數據。原始已繳交的 Word／PPTX 保留於 `docs/proposal/`；新版另存檔案，不覆蓋原始歷史記錄。
 
-## GitHub 專案簡介
+## 1. 專題定位
 
-**建議的 GitHub Description：** 智慧空氣品質預測與生活決策 AI Agent｜整合環境部開放資料、PM2.5 短期預測與 AQI 活動指引
+AirGuard AI 將環境部的**官方 AQI 與歷史每小時 PM2.5**、短期 ML 預測、官方活動建議及可追溯的 AI Agent 整合成情境式決策服務。主要使用情境是：「我接下來幾小時想慢跑 40 分鐘，哪個時段較值得考慮？依據是什麼？」
 
-**建議的 GitHub Topics：** `air-quality`、`pm25`、`ai-agent`、`machine-learning`、`data-analytics`、`taiwan`（Topics 為 GitHub 技術索引標籤，保留英文較容易被搜尋）。
+系統**只在有充分證據的測站尺度**提供比較；不將道路、巷弄或個人吸入量假裝已被官方測得。
 
-## 團體專題與 Proposal 交付項目
+### 研究背景（外部統計，非系統成果）
 
-本專題由 **3 位組員共同完成**。目前以課程 Proposal 階段的**四項交付物**為主。
+- WHO 估計全球 **2019 年**室外空污造成約 **420 萬人過早死亡**。[來源](https://www.who.int/news-room/fact-sheets/detail/ambient-(outdoor)-air-quality-and-health)
+- 環境部公布臺灣 PM2.5 年平均濃度由 **2019 年 16.2** 降至 **2025 年 12.8 μg/m³**，約改善 21%；須注意手動／自動監測口徑不同。[來源](https://enews.moenv.gov.tw/moenv-news/zh-tw/News/1844)
+- 官方 AQI 由多種污染物及不同平均窗組成，**不等於模型預測的單一 PM2.5 濃度**。[官方指引](https://airtw.moenv.gov.tw/cht/Information/Standard/AirQualityIndicatorNew.aspx)
 
-| 課程要求 | 本倉庫對應內容 | 目前狀態 |
-| --- | --- | --- |
-| ① Proposal Document（提案報告書） | [`docs/proposal/AirGuard_AI_Final_Proposal.docx`](docs/proposal/AirGuard_AI_Final_Proposal.docx) | 文件已備妥 |
-| ② Proposal Presentation（提案簡報） | [`docs/proposal/AirGuard_AI_Final_Proposal_Presentation.pptx`](docs/proposal/AirGuard_AI_Final_Proposal_Presentation.pptx) | 文件已備妥 |
-| ③ GitHub Repository | 本儲存庫及 `README.md`、提案附件 | **檔案已備妥；建立並 Push 遠端倉庫後完成** |
-| ④ `DESIGN.md` | [`DESIGN.md`](DESIGN.md) | 系統提案設計已備妥 |
+## 2. 核心功能與範圍
 
-此階段**不要求已完成 ML 訓練、網站部署或最終實驗**。系統程式與結果將依提案內容於後續階段實作及驗證。
+| 分級 | 功能 | 交付界線 |
+|---|---|---|
+| **P0 必做** | 官方 AQI／測站地圖／歷史資料、資料品質、PM2.5 1／3／6h ML、活動指引 | 環境部資料＋正確時間戳與來源 |
+| **P0 必做** | Agent Tool Calling、活動時段比較、Web Dashboard、來源卡、錯誤降級 | 至少 30 個 Agent 情境驗收 |
+| **P0 必做** | **測站尺度**活動濃度×時間估算、ML 與 Agent 雙軌評估 | 單位 μg·h/m³，非個人實測吸入量 |
+| **P1 可選** | SHAP 可解釋性、手動活動記錄與估算累積值 | 完成 P0 後加入；缺資料不得以 0 補 |
+| **明確排除** | 道路級污染熱點、可靠低污染導航／改道排序、真實個人吸入劑量 | 現有官方測站資料不能支撐道路級可信結論 |
 
-## 專題目標
+**P1 是有公開方法可實作的擴充，不是本次最低驗收阻擋項**。詳見 [新版 SRS](docs/requirements.md) 與 [可行性審查](docs/feasibility-audit.md)。
 
-- **資料取得**：整合官方即時 AQI、歷史 AQI 及逐小時污染物觀測資料，追蹤測站、時間、版本、缺失與資料新鮮度。
-- **資料分析與機器學習（ML）**：預測未來 **1、3、6 小時 PM2.5 濃度**（μg/m³），比較 Persistence、Seasonal Naive、Ridge、Random Forest、XGBoost。
-- **領域知識**：依官方 AQI 規範與一般／敏感族群活動建議產生可查證的解釋；**模型 PM2.5 預測不等於官方 AQI 預報**。
-- **AI Agent 與決策支援**：理解查詢情境、選擇合法工具、驗證資料、比較可支持的候選時段，並提供來源、限制與安全降級說明。
-- **實驗評估**：獨立評估模型 MAE/RMSE 與 Agent 工具正確性、來源完整率、規則一致性及異常處理。
+## 3. 官方資料與取得限制
 
-## 預期使用情境
+| 資料 | 來源 | 用途 |
+|---|---|---|
+| 即時 AQI | [AQX_P_432](https://data.moenv.gov.tw/dataset/detail/AQX_P_432) | 每小時 AQI、污染物與發布時間 |
+| 歷史 AQI | [AQX_P_488](https://data.moenv.gov.tw/dataset/detail/AQX_P_488) | 按月歷史下載、趨勢與對照 |
+| 逐時污染物 | [AQX_P_13](https://data.moenv.gov.tw/dataset/detail/AQX_P_13) | PM2.5 建模主資料，00–23 小時寬表轉長表 |
+| 測站地理 | [AQX_P_07](https://data.moenv.gov.tw/dataset/detail/AQX_P_07) | 座標、測站地址與基本資料 |
+| AQI 健康活動建議 | [官方指引](https://airtw.moenv.gov.tw/cht/Information/Standard/AirQualityIndicatorNew.aspx) | Domain Rules 的唯一正式版本依據 |
 
-使用者問：「我想在臺中安排 40 分鐘的戶外慢跑，接下來幾個小時哪個時段比較合適？」
+**API 接入注意**：環境部 API 需要會員 API Key，請先申請並放在本機 `.env` 或部署秘密變數，**不要 Commit 到 GitHub**。歷史公開資料可按官方提供方式下載，快取與 Demo 必須標明資料時間，不宣稱快取是即時資料。[API 說明](https://data.moenv.gov.tw/paradigm)
 
-系統規劃依序完成：解析活動與時段 → 選定有效監測站 → 取得官方 AQI 與 PM2.5 資料 → 檢查資料品質 → 預測短期 PM2.5 → 套用官方活動建議 → 比較可支持的候選時段 → 回覆來源、時間及不確定性。
-
-只有處於模型 **1–6 小時預測範圍**內、且資料品質合格的候選時段才進行模型支持的短期比較。超出範圍的查詢不以 6 小時模型冒充隔日預測，應明示限制或另採具來源且明確標示的官方較長期資訊。
-
-## 文件導覽
-
-| 檔案 | 內容 |
-| --- | --- |
-| [GitHub 協作注意事項](CONTRIBUTING.md) | 版本管理、文件同步與資料保護（非本次四項必要繳交物） |
-| [DESIGN.md](DESIGN.md) | 正式系統設計：架構、模組、資料流、模型、Agent、規則、可行性、評估與限制 |
-| [正式提案報告書](docs/proposal/AirGuard_AI_Final_Proposal.docx) | 正式提案報告書 |
-| [正式提案簡報](docs/proposal/AirGuard_AI_Final_Proposal_Presentation.pptx) | 正式提案簡報（24 頁） |
-| [官方資料來源](docs/data-sources.md) | 官方資料來源、欄位、品質與版控原則 |
-| [實驗與評估規劃](docs/evaluation-plan.md) | ML／Agent 雙軌實驗設計、基線與指標 |
-| [系統架構圖](docs/architecture.mmd) | Mermaid 系統架構原始圖 |
-| [Agent 流程圖](docs/agent-flowchart.mmd) | Mermaid Agent 流程原始圖 |
-| [實作時程與里程碑](docs/implementation-roadmap.md) | 專題實作順序與驗收證據 |
-| [GitHub 發布指引](docs/github-publishing.md) | 建立遠端倉庫與發布檢查 |
-
-## 初始儲存庫結構
+## 4. 系統架構
 
 ```text
-AirGuard-AI/
-├── README.md
-├── DESIGN.md
-├── CONTRIBUTING.md           # GitHub 協作注意事項（補充文件）
-├── .gitignore
-├── .env.example
-├── docs/
-│   ├── proposal/                 # 正式提案報告書／簡報
-│   ├── architecture.mmd
-│   ├── agent-flowchart.mmd
-│   ├── data-sources.md
-│   ├── evaluation-plan.md
-│   ├── implementation-roadmap.md
-│   └── schemas/                  # API 輸入輸出設計契約
-├── src/                           # 後續 Python 資料、Agent、ML 服務
-├── app/                           # 後續 Web 使用者介面
-├── data/                          # 資料使用與重現規範（不含原始大檔）
-├── experiments/                   # 後續模型回測與對照研究
-├── tests/                         # 後續測試案例及驗證
-└── research/                      # 領域研究及證據整理
+① Web UI／站點地圖 → ② Query Interpreter → ③ 受限 Planner Agent
+  → ④ 資料取得與品質檢查 → ⑤ ML／分析／暴露估算
+  → ⑥ 官方 Domain Rules → ⑦ 時段決策／保守排名 → ⑧ 圖表／引用／稽核
 ```
 
-## 技術規劃
+LLM 解析情境與呼叫白名單工具，**數值運算、模型推論、官方活動規則判定必須由確定性程式執行**。模型只有測站 **PM2.5 1、3、6 小時**預測，不產生官方未來 AQI。
 
-| 系統層級 | 預計技術 |
-| --- | --- |
-| 網頁介面（Web UI） | React / Next.js |
-| AI Agent／API 服務 | Python / FastAPI / LLM Function Calling（白名單工具） |
-| 資料處理與儲存 | 環境部 API、CSV ETL、SQLite；必要時 PostgreSQL |
-| 預測模型 | pandas、scikit-learn、XGBoost；SHAP 作可選解釋工具 |
-| 領域知識與規則 | 經來源核實且有版本的官方 AQI 指引 |
-| 測試與品質驗證 | pytest、時間序列前推回測、Agent 情境測試 |
+## 5. 實驗規劃
 
-技術棧屬**設計選型**，尚未安裝或部署；實際安裝及執行指令會在程式完成並驗證後補上；此階段不提供尚無法執行的指令。
+- **Track A（ML）**：Persistence、Seasonal Naive vs Ridge／Random Forest／XGBoost；按時間 70／15／15＋Rolling-origin；MAE、RMSE、Skill Score，分時距與測站分析。
+- **Track B（Agent／決策）**：≥30 固定情境；工具選擇正確率、來源完整率、官方規則一致率、安全降級率、P50／P95 延遲。
+- **估算指數單元測試**：計算 `Σ(濃度 μg/m³ × 時長 h)` 的結果、單位與未知區間；不評估個人醫療安全性。
 
-## 官方資料來源
+**沒有訓練完成的模型或實驗結果時，所有數字都應維持「待實測」。**
 
-- 環境部 [AQX_P_432：空氣品質指標 AQI（每小時）](https://data.moenv.gov.tw/dataset/detail/AQX_P_432)
-- 環境部 [AQX_P_488：空氣品質指標 AQI（歷史資料）](https://data.moenv.gov.tw/dataset/detail/AQX_P_488)
-- 環境部 [AQX_P_13：空氣品質監測小時值](https://data.moenv.gov.tw/dataset/detail/AQX_P_13)
-- 環境部 [AQI 與健康影響及活動建議](https://airtw.moenv.gov.tw/cht/Information/Standard/AirQualityIndicatorNew.aspx)
+## 6. 四項 Proposal 交付與歷史版本
 
-資料使用應遵守原始來源條款、頻率限制與署名要求；不在倉庫公開 API 金鑰、私人資料或未經授權再散布的資料。
+| 交付項目 | 既有繳交版 | 最新可行性修訂 |
+|---|---|---|
+| ① Proposal Document | [原始 Word](docs/proposal/AirGuard_AI_Final_Proposal.docx) | [v3 Word](docs/proposal/AirGuard_AI_Proposal_Feasible_v3.docx) |
+| ② Proposal Presentation | [原始簡報](docs/proposal/AirGuard_AI_Final_Proposal_Presentation.pptx) | [v3 簡報](docs/proposal/AirGuard_AI_Proposal_Presentation_Feasible_v3.pptx) |
+| ③ GitHub Repository | [本倉庫](https://github.com/sam052003/AirGuard-AI) | 本 README 與資料來源／評估／需求規格 |
+| ④ DESIGN.md | Git 歷史版本 | [最新 DESIGN](DESIGN.md) |
 
-## 研究與安全邊界
+三人團體專題**暫不規劃組員分工**；各人姓名／學號請依正式資料填寫，避免誤用舊版上傳內容。
 
-AirGuard AI **不是**官方空氣品質預報或個人醫療診斷服務。測站觀測不等於每一條街道的個人暴露量；模型不保證在每個測站或預測時距勝過簡單基線。資料過期、缺失、來源衝突或預測範圍不足時，系統必須揭露限制，不能捏造即時數值與健康保證。
+## 7. 文件導覽與目前狀態
 
-本團隊專題目前為**提案階段**；實驗結果、正式部署與線上展示將在後續實作及驗證後提供。
+- [DESIGN.md](DESIGN.md) — 八模組、資料流、AI Agent、ML、API 與安全條件。
+- [可實作性審查](docs/feasibility-audit.md) — 逐項判斷公開資料是否足以支援。
+- [需求與驗收規格](docs/requirements.md) — FR-01～FR-12、P0／P1／排除範圍。
+- [官方資料來源](docs/data-sources.md) — 欄位、授權碼、下載與可靠性風險。
+- [實驗計畫](docs/evaluation-plan.md) 與 [開發路線圖](docs/implementation-roadmap.md)。
+- [版本變更記錄](docs/decisions/2026-11-24-scope-decision.md) — 說明為何取消路線導航必做承諾。
+- [myplan 文件索引](myplan/README.md) — 後續原始摘要與研究需求的重新整合。
+
+**目前狀態**：文件更新完成 ≠ 系統程式／模型／Demo 已完成。資料實際可下載時間涵蓋、歷史缺值與 API 限額仍需在工程階段進一步盤點。
