@@ -3,7 +3,7 @@
 **物聯網數據分析與應用（AIoT-DA）｜三人團體期末專題**  
 **研究與設計修訂：2026-11-24｜版本：v3（依公開資料重新收斂可實作範圍）**
 
-> **專案目前屬設計與提案階段。** 本 README 描述**計畫實作的功能**，不表示已完成 Web、ML、Agent 或任何實驗數據。原始已繳交的 Word／PPTX 保留於 `docs/proposal/`；新版另存檔案，不覆蓋原始歷史記錄。
+> **目前為 W1 資料工程初期**：已建立環境部資料解析、離線樣本與單元測試；真實 API Key、歷史資料盤點、ML、Agent、Web 與正式實驗尚未驗證。原始與 v3 提案文件均保留於 `docs/proposal/`。
 
 ## 1. 專題定位
 
@@ -80,4 +80,18 @@ LLM 解析情境與呼叫白名單工具，**數值運算、模型推論、官�
 - [版本變更記錄](docs/decisions/2026-11-24-scope-decision.md) — 說明為何取消路線導航必做承諾。
 - [myplan 文件索引](myplan/README.md) — 後續原始摘要與研究需求的重新整合。
 
-**目前狀態**：文件更新完成 ≠ 系統程式／模型／Demo 已完成。資料實際可下載時間涵蓋、歷史缺值與 API 限額仍需在工程階段進一步盤點。
+**目前狀態**：W1 離線資料處理已有 Python 程式及 8 項單元測試；真實環境部資料連接、ML 模型、Agent、Web Demo 尚未完成。資料可用期間、實際缺值與 API 限額需取得金鑰並盤點。
+
+
+## 8. W1 已開始實作：官方資料接入與品質檢查（2026-11-24）
+
+- **已寫程式與測試**：環境部 `AQX_P_432` 的 AQI／PM2.5 區分、`AQX_P_13` 的 24 小時寬表轉長表、缺值／單位／時間檢查、API 白名單與 Key 保護。
+- **8 項離線測試已通過**；案例資料位於 `data/fixtures/`，**全部為合成資料，不是官方監測結果**。
+- **未驗證**：真實 API 呼叫、長期歷史下載、臺中站點覆蓋、完整模型訓練、Agent、網站。不能將 W1 等同 P0 功能完成。
+- [W1 安裝、測試與 API 指引](docs/w1-data-integration.md)；Python 3.10+。
+
+```bash
+python -m pip install -e .
+python -m unittest discover -s tests -v
+python -m airguard --dataset AQX_P_13 --input data/fixtures/aqx_p_13_synthetic.json
+```

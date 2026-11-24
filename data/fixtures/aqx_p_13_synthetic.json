@@ -1,0 +1,17 @@
+{
+  "records": [
+    {
+      "SiteId": "999", "SiteName": "示例測站（合成資料）",
+      "ItemEngName": "PM2.5", "ItemName": "細懸浮微粒", "ItemUnit": "μg/m3",
+      "MonitorDate": "2026/11/23", "MonitorValue00": "12.5",
+      "MonitorValue01": "", "MonitorValue02": "--",
+      "MonitorValue03": "-1", "MonitorValue04": "8.7"
+    },
+    {
+      "SiteId": "999", "SiteName": "示例測站（合成資料）",
+      "ItemEngName": "SO2", "ItemName": "二氧化硫", "ItemUnit": "ppb", "MonitorDate": "2026/11/23",
+      "MonitorValue00": "2.0"
+    }
+  ],
+  "metadata": "合成資料，僅供測試，不是真實環境部觀測"
+}
