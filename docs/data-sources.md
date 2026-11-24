@@ -1,25 +1,23 @@
-# 官方資料來源與資料品質規格
+# 官方資料來源、欄位與使用限制
 
-本文件以 AirGuard AI 提案內容作為資料契約起點。尚未完成完整歷史資料下載與測站品質盤點。
+| 代碼 | 來源 | 重要欄位 | 使用方式 |
+|---|---|---|---|
+| AQX_P_432 | [官方每小時 AQI](https://data.moenv.gov.tw/dataset/detail/AQX_P_432) | SiteId、SiteName、AQI、PM2.5、publishtime、Longitude／Latitude | 取得目前正式發布的 AQI 與測站濃度 |
+| AQX_P_488 | [歷史 AQI](https://data.moenv.gov.tw/dataset/detail/AQX_P_488) | SiteId、DataCreationDate、PM2.5、WindSpeed 等 | 按月官方歷史下載，檢查可用年份 |
+| AQX_P_13 | [逐時污染物](https://data.moenv.gov.tw/dataset/detail/AQX_P_13) | SiteId、ItemName、ItemUnit、MonitorDate、MonitorValue00…23 | 逐時 PM2.5 模型候選主資料 |
+| AQX_P_07 | [測站基本資料](https://data.moenv.gov.tw/dataset/detail/AQX_P_07) | SiteId、SiteName、County、TWD97Lon／Lat | 地圖座標與標準測站識別 |
+| MOENV AQI RULE | [AQI 健康影響](https://airtw.moenv.gov.tw/cht/Information/Standard/AirQualityIndicatorNew.aspx) | AQI 各級、族群活動建議 | 版本化決策規則 |
 
-| ID | 官方來源 | 用途 | 資料型態與注意事項 |
-| --- | --- | --- | --- |
-| `AQX_P_432` | [每小時 AQI](https://data.moenv.gov.tw/dataset/detail/AQX_P_432) | 顯示官方 AQI、污染物與發布時間 | `siteid`, `aqi`, `pm2.5`, `publishtime` 等欄位須依實際 API schema 驗證 |
-| `AQX_P_488` | [歷史 AQI](https://data.moenv.gov.tw/dataset/detail/AQX_P_488) | 歷史分析與輔助回測 | 月份下載及欄位內容依取得檔案核對 |
-| `AQX_P_13` | [小時值資料](https://data.moenv.gov.tw/dataset/detail/AQX_P_13) | 逐小時 PM2.5 目標資料 | `MonitorValue00…23` 的寬表欄位應正規化成長表，確認時間與單位 |
-| `MOENV_AQI_GUIDE` | [AQI 活動指引](https://airtw.moenv.gov.tw/cht/Information/Standard/AirQualityIndicatorNew.aspx) | 規則與敏感族群建議 | 保存版本、生效日期與適用條件；不直接把 PM2.5 預測換算成官方 AQI |
+## 存取與工程限制
 
-## 取得與驗證
+- 官方 [API 使用說明](https://data.moenv.gov.tw/paradigm) 明示**會員 API Key**。團隊應由 Server Side 使用金鑰、遵守官方存取條款及頻率；不要 Push `.env` 或 API Key。
+- 先用官方提供的歷史 CSV／JSON 檔盤點站點 × 月份，確認真正可下載範圍；**文件列有資料集不等於已取得完整 2024–2026 訓練資料**。
+- `MonitorValue00…23` 欄位轉為 24 個以小時計的觀測，保留原始測站、日期、測項、單位與缺漏旗標。
+- 採用同一模型標的「**原始逐時 PM2.5**」（μg/m³），不要把 `PM2.5_AVG` 不同移動平均窗當成同一目標。
+- `observed_at`、`published_at`、`retrieved_at` 三種時間分開記錄；`published_at` 缺失則標未知，回測說明是否為嚴格歷史可用性評估。
+- 上線時有 API 故障或逾期，顯示已驗證快取與**快取日期**，不顯示「最新 AQI」。
+- 外部氣象資料非最低必做前置；使用中央氣象署 API 會另外需要授權碼及測站／時區對齊。[CWA API 說明](https://opendata.cwa.gov.tw/devManual/description)。
 
-1. 保存來源網址、查詢條件、擷取時間、HTTP／資料狀態與 SHA-256；不得公開 API 金鑰。
-2. 建立欄位映射與單位檢查，所有 PM2.5 模型目標為 μg/m³。
-3. 儲存測站 ID、觀測時間、資料發布時間（可得時）、擷取時間及來源版本。
-4. 將過期、缺值、異常及重複另行記錄，處理後仍保留原始資料及排除理由。
-5. 每個回測 fold 僅使用預測起點之前可取得的歷史觀測；歷史真正可得時間未知時，須披露為重建回測。
-6. 預先產生站點 × 月份的有效樣本數、缺失率與時間連續性報告，再確定首批臺中測站及資料區間。
+## 已確認不能由官方測站資料直接支援的主張
 
-## 研究限制
-
-- 2024–2026 為提案候選期間，實際完整度、保留區間及官方 API 額度需要實作驗證。
-- 測站觀測值不能外推為特定街道或個人暴露。
-- 官方 AQI 是多污染物及不同平均時間規則下的發布指標，與單一時點 PM2.5 觀測或模型預測不同。
+AQX_P_432、488、13 與 07 **不能單獨提供道路逐段／逐分鐘 PM2.5 真值**，不得因此繪製低污染街道路線熱點，也不把站點值等同個人實測暴露。
