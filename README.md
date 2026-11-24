@@ -114,3 +114,12 @@ python -m airguard --dataset AQX_P_13 --input data/fixtures/aqx_p_13_synthetic.j
 - [GitHub Actions Python CI](.github/workflows/python-ci.yml)：只驗證離線合成資料／契約範例；真實官方 API 須在組員持有金鑰的本機另行驗證。
 
 PR 使用 `.github/PULL_REQUEST_TEMPLATE.md`，Issue 使用 `.github/ISSUE_TEMPLATE/`；`main` 分支保護／Rulesets **需要 Repository 管理員另外於 GitHub 設定**，新增 CI 檔本身不會啟用合併阻擋。
+
+
+## 10. 第二組定稿版 Word／PPT（Deep Research 補強）
+
+- [第二組 v3 Proposal Document（Deep Research 補強）](docs/proposal/AirGuard_AI_Proposal_v3_第二組_DeepResearch_補強.docx)：包含第二組組員資訊、五個思維模式、三項專業爭論與十個深度理解問題。
+- [第二組 v3 Proposal Presentation（Deep Research 補強）](docs/proposal/AirGuard_AI_Presentation_v3_第二組_DeepResearch_補強.pptx)：與報告相同的組員及研究架構。
+- [Deep Research 文字版與研究證據](research/deep-research-v3-evidence-2026-11-24.md)。
+
+以上為**2026-11-24 修訂文件**；原始提案與前次 v3 Word／PPT 均保留作版本追溯，不覆蓋或冒稱當時已包含修改。正式繳交平台若需要直接上傳檔案，仍須依課程規定另行提交。
