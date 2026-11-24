@@ -41,3 +41,7 @@ coverage/
 Thumbs.db
 .idea/
 .vscode/
+
+# W1 normalization and local build outputs
+/data/normalized/
+*.egg-info/
