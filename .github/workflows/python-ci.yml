@@ -1,0 +1,41 @@
+name: Python CI
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: python-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python-tests:
+    name: python-tests (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install local W1 package
+        run: python -m pip install -e .
+      - name: Compile Python modules
+        run: python -m compileall -q src tests
+      - name: Run offline tests
+        run: python -m unittest discover -s tests -v
+      - name: Smoke-test CLI with synthetic fixture
+        run: python -m airguard --dataset AQX_P_13 --input data/fixtures/aqx_p_13_synthetic.json

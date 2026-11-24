@@ -99,3 +99,18 @@ python -m pip install -e .
 python -m unittest discover -s tests -v
 python -m airguard --dataset AQX_P_13 --input data/fixtures/aqx_p_13_synthetic.json
 ```
+
+
+## 9. Antigravity × ChatGPT × GitHub 開發協作規範（2026-11-24）
+
+**主要流程：GitHub Issue → Antigravity 功能分支＋程式／測試 → Pull Request → ChatGPT 讀實際 diff 並 Review → Antigravity 修正 → 組員確認 CI／審核後 Merge。** ChatGPT 不能自動監看 GitHub；每次 PR 建立或更新後，由組員將 PR URL 貼到 ChatGPT 要求審核。
+
+- [AGENTS.md](AGENTS.md)：提供 Antigravity 與 ChatGPT 的權責、P0／P1 邊界與不允許行為。
+- [協作流程](docs/development-workflow.md)、[Reviewer 固定清單](docs/reviewer-checklist.md)。
+- [API Contract](docs/api-contract.md)：`/api/v1` 規劃端點、請求／回覆、錯誤碼；**尚非已部署 API**。
+- [真實資料驗證 Gate](docs/data-validation-protocol.md)、[依賴版本策略](docs/dependency-policy.md)。
+- [Agent 30 情境驗收規格](docs/agent-test-plan.md)：目前僅為**尚未執行的測試規格**。
+- [Antigravity W1 下一步 Prompt](docs/prompts/antigravity-w1-next.md)與[ChatGPT PR 審核 Prompt](docs/prompts/chatgpt-pr-review.md)。
+- [GitHub Actions Python CI](.github/workflows/python-ci.yml)：只驗證離線合成資料／契約範例；真實官方 API 須在組員持有金鑰的本機另行驗證。
+
+PR 使用 `.github/PULL_REQUEST_TEMPLATE.md`，Issue 使用 `.github/ISSUE_TEMPLATE/`；`main` 分支保護／Rulesets **需要 Repository 管理員另外於 GitHub 設定**，新增 CI 檔本身不會啟用合併阻擋。

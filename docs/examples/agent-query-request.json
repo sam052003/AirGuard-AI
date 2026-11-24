@@ -1,0 +1,11 @@
+{
+  "query_text": "[合成示範] 我想在某測站附近慢跑 40 分鐘，接下來 3 小時應如何評估？",
+  "station_id": "999",
+  "city": "synthetic",
+  "activity_type": "jogging",
+  "population_group": "general",
+  "start_at": "2026-11-24T18:00:00+08:00",
+  "end_at": "2026-11-24T21:00:00+08:00",
+  "timezone": "Asia/Taipei",
+  "as_of": "2026-11-24T17:00:00+08:00"
+}

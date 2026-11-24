@@ -1,6 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "AirGuard 查詢請求資料格式（設計規格）",
+  "$id": "https://github.com/sam052003/AirGuard-AI/blob/main/docs/schemas/query.schema.json",
+  "title": "AirGuard v0.1 Query Request (planned)",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -12,7 +13,8 @@
       "type": [
         "string",
         "null"
-      ]
+      ],
+      "pattern": "^[0-9A-Za-z_-]+$"
     },
     "city": {
       "type": [

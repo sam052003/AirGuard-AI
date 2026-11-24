@@ -1,0 +1,20 @@
+{
+  "status": "unavailable",
+  "interpreted_request": {
+    "station_id": "999",
+    "activity_type": "jogging",
+    "population_group": "general",
+    "timezone": "Asia/Taipei"
+  },
+  "official_aqi": null,
+  "forecasts": [],
+  "considered_windows": [],
+  "recommendation": null,
+  "sources": [],
+  "limitations": [
+    "合成格式示例，非真實監測數據",
+    "尚無完成訓練與驗證的預測模型，不提供未來空污結論"
+  ],
+  "generated_at": "2026-11-24T09:00:00Z",
+  "trace_id": null
+}

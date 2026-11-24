@@ -27,3 +27,14 @@
 - 本階段不把尚未執行的系統功能、模型訓練與實驗結果寫成已完成；最終階段的實作成果及影片是後續工作。
 
 此文件說明團隊協作方式，不代表所有功能或實驗已完成。
+
+
+## v3 正式協作政策（2026-11-24）
+
+前述內容為初期建議。自 v3 程式開發開始，以 [AGENTS.md](AGENTS.md)、[完整 GitHub 交接流程](docs/development-workflow.md) 及 [PR Template](.github/PULL_REQUEST_TEMPLATE.md) 作為**目前開發協作規範**：
+
+- Antigravity 主寫程式、補測試並提交 PR；ChatGPT 依 **最新 diff／HEAD SHA** 審核並把問題記錄在 GitHub PR；組員負責正式合併。
+- 不直接向 `main` 推功能程式，優先 Issue → feature branch → PR → review → CI → merge。
+- PR 需提供真實測試證據與失效邊界；由組員確認 Blocker 處理後再合併。
+- GitHub 連線無法自動讓 ChatGPT 持續監看 PR；請每次貼 PR URL 要求檢查。若 Review 是同一 GitHub 帳號不能自我批准，由不同組員完成正式 GitHub Approve。
+- 本規範不指定三位組員的模組分工；不把靜態設計規格當成已實作的證據。
